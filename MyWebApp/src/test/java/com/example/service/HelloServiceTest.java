@@ -12,3 +12,4 @@ class HelloServiceTest {
         assertEquals("Hello, DevOps!", result);
     }
 }
+
