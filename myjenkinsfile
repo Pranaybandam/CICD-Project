@@ -1,0 +1,97 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3'
+    }
+
+    stages {
+
+        stage('checkout-code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Pranaybandam/CICD-Project.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean install -f MyWebApp/pom.xml'
+            }
+        }
+
+        stage('unit-test & Code-coverage-report') {
+            steps {
+                junit '**/target/surefire-reports/*.xml'
+                jacoco()
+            }
+        }
+
+        stage('sast-scanning') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'mvn clean verify sonar:sonar -f MyWebApp/pom.xml'
+                }
+            }
+        }
+
+        stage('sast-scanning-report') {
+            steps {
+                sh 'trivy fs ./MyWebApp'
+            }
+        }
+
+        stage('Artifactory-upload') {
+            steps {
+                nexusArtifactUploader(
+                    artifacts: [[
+                        artifactId: 'MyWebApp',
+                        classifier: '',
+                        file: 'MyWebApp/target/MyWebApp.war',
+                        type: '.war'
+                    ]],
+                    credentialsId: 'nexus',
+                    groupId: 'com.dept.app',
+                    nexusUrl: '13.126.6.213:8081',
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    repository: 'myapp',
+                    version: '1.0-SNAPSHOT'
+                )
+            }
+        }
+        stage("application deploying in tomcat"){
+    steps{
+deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'tomcat', path: '', url: 'http://65.2.191.174:8080/')], contextPath: 'myapp', war: '**/*.war'
+}
+}
+
+    } // <-- END OF stages
+
+    post {
+        success {
+            emailext(
+                subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                Job: ${env.JOB_NAME}
+                Build: #${env.BUILD_NUMBER}
+                Status: deployemnet successfull
+                Check console: ${env.BUILD_URL}
+                """,
+                to: "pranay4694@gmail.com"
+            )
+        }
+
+        failure {
+            emailext(
+                subject: "Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                Job: ${env.JOB_NAME}
+                Build: #${env.BUILD_NUMBER}
+                Status: deployement failed
+                Check console: ${env.BUILD_URL}
+                """,
+                to: "pranay4694@gmail.com"
+            )
+        }
+    } // END post
+} // END pipeline
