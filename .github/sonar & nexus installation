@@ -1,0 +1,38 @@
+
+-------------nexus installaation----------------
+sudo -i
+apt update -y
+apt install unzip -y
+apt install openjdk-17-jdk -y
+wget https://download.sonatype.com/nexus/3/nexus-3.83.1-03-linux-x86_64.tar.gz
+tar -xvf nexus-3.83.1-03-linux-x86_64.tar.gz
+mv nexus-3.83.1-03 /opt/
+mv sonatype-work /opt/
+chmod 777 -R nexus-3.83.1-03 sonatype-work
+mv nexus-3.83.1-03 nexus
+adduser nexus
+chown nexus:nexus /opt/nexus
+chown nexus:nexus /opt/sonatype-work
+sudo visudo
+sudo ln -s /opt/nexus/bin/nexus /etc/init.d/nexus
+su - nexus
+/etc/init.d/nexus start
+
+
+
+
+---------------------sonarqube installation -----------
+
+sudo apt update -y
+sudo apt install unzip -y
+sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-26.3.0.120487.zip
+unzip sonarqube-26.3.0.120487.zip
+mv sonarqube-26.3.0.120487 sonarqube
+mv sonarqube /opt/sonarqube
+cd /opt/sonarqube
+sudo chmod 777 -R /opt/sonarqube
+sudo useradd sonar
+sudo chown sonar:sonar /opt/sonarqube -R
+sudo apt install openjdk-21-jdk -y
+su - sonar
+/opt/sonarqube/bin/linux-x86-64/sonar.sh start
