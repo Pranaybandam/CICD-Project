@@ -36,3 +36,19 @@ sudo chown sonar:sonar /opt/sonarqube -R
 sudo apt install openjdk-21-jdk -y
 su - sonar
 /opt/sonarqube/bin/linux-x86-64/sonar.sh start
+
+
+
+
+
+----------------tomcat installation------------------
+  
+  sudo apt update -y
+  sudo apt install openjdk-17-jdk -y
+  wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.20/bin/apache-tomcat-11.0.20.tar.gz
+   tar -xvf apache-tomcat-11.0.20.tar.gz
+  
+ vim context.xml 
+vim tomcat-users.xml
+ ./startup.sh start
+
